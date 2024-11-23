@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: my-spring-boot-app
-        image: jenkinsproject.azurecr.io/my-spring-boot-app:latest # This will be updated by the Jenkins pipeline
+        image: jenkinsproject.azurecr.io/my-spring-boot-app:23
         ports:
         - containerPort: 8080
         env:
