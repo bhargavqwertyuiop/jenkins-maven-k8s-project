@@ -1,0 +1,10 @@
+FROM openjdk:17-jdk-alpine
+
+COPY target/spring-boot-web.jar /app/myapp.jar
+
+WORKDIR /app
+
+EXPOSE 8080
+
+CMD ["java", "-jar", "myapp.jar"]
+
