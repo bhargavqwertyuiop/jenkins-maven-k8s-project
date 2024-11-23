@@ -1,0 +1,49 @@
+pipeline{
+    agent {
+        docker {
+      image 'abhishekf5/maven-abhishek-docker-agent:v1'
+      args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
+    	}
+    }
+    
+    stages{
+        stage("Checkout"){
+            steps{
+               // git branch: 'main', url: 'https://github.com/bhargavqwertyuiop/jenkins-maven-k8s-project.git'
+                echo "Checking out......"
+                
+            }
+        }
+        stage("Build and Pack"){
+            steps{
+                sh "cd spring-boot-app && mvn clean package"
+            }
+        }
+        stage("SonarTest"){
+            steps{
+                sh """cd spring-boot-app && mvn sonar:sonar \
+                -Dsonar.projectKey=mvn-spring \
+                -Dsonar.host.url=http://34.57.70.240:9000 \
+                -Dsonar.login=4cf9a0af46440b5921e2fad6bad7cb066c9ae376""" 
+            }
+        }
+        stage("Build the image"){
+            steps{
+                sh "cd spring-boot-app && docker build -t my-spring-boot-app:${env.BUILD_ID} ."
+            }
+        }
+        stage("Push to Docker Registry"){
+            steps{
+                 script {
+                    withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh """
+                        echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+                        docker tag my-spring-boot-app:${env.BUILD_ID} bhargavqwertyuiop/my-spring-boot-app:${env.BUILD_ID}
+                        docker push bhargavqwertyuiop/my-spring-boot-app:${env.BUILD_ID}
+                        """
+                    }
+            }
+        }
+    }
+}
+}
