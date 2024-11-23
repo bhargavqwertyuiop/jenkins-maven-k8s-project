@@ -16,3 +16,5 @@ spec:
             name: my-spring-boot-app
             port:
               number: 8080
+
+//Apply this in your Cluster with ingress Controller
